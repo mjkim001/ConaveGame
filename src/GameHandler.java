@@ -1,7 +1,6 @@
 import javax.swing.*;
 import java.io.*;
 
-
 public class GameHandler {
 	private final int SCREEN_WIDTH = 30; // 출력되는 화면 크기 범위
 	private final int SCREEN_HEIGHT = 30;
@@ -13,18 +12,19 @@ public class GameHandler {
 	private int num[]; // 흰돌, 검은 돌 구별
 	private int temp; // 짝수 홀수로 돌 순서 판단
 	private int posX, posY; // 돌위치 중간 저장
-	private final int DEFULAT_X = FIELD_WIDTH + 3;
-	private final int DEFULAT_Y = FIELD_HEIGHT - 5;
+	private final int DEFULAT_X = FIELD_WIDTH / 2;
+	private final int DEFULAT_Y = FIELD_HEIGHT / 2;
+	private int win;
 
-	private String playerImage;
-	private Player player;
+	// private String playerImage;
+	private Player player; // 돌의 x,y좌표와 이미지를 저장하는 객체
 	private int currentScore[], previousScore[]; // 점수 저장 (이전, 현재)
 
-	private boolean isGameOver;
+	private boolean isGameOver; // 게임이 종료되었는지 판단
 
-	private JTextArea textArea;
-	private String[][] buffer;
-	private String[][] field;
+	private JTextArea textArea; // 키보드 입력을 받은 것을 전달항기위한
+	private String[][] buffer; // 출력 buffer
+	private String[][] field; // 바둑판 기호를 담고 있는 공간
 
 	public GameHandler(JTextArea ta) {
 		textArea = ta; // JFrame에 있는 textArea
@@ -225,7 +225,7 @@ public class GameHandler {
 		}
 	}
 
-	private boolean range(int x, int y) { //돌이 움직일 수 있는 범위 제한
+	private boolean range(int x, int y) { // 돌이 움직일 수 있는 범위 제한
 
 		if (x < FIELD_WIDTH + 10 && x >= 0 && y < FIELD_HEIGHT && y >= 0) {
 			return true;
@@ -233,10 +233,10 @@ public class GameHandler {
 		return false;
 	}
 
-	private boolean doesStoneFit(int x, int y) { //해당 위치에 돌이 있으면 false, 돌이 없으면 true
+	private boolean doesStoneFit(int x, int y) { // 해당 위치에 돌이 있으면 false, 돌이 없으면 true
 		if (x < FIELD_WIDTH && x >= 0 && y < FIELD_HEIGHT && y >= 0) {
-			if (!field[posX][posY].equals("●") && !field[posX][posY].equals("●─") 
-					&& !field[posX][posY].equals("○") && !field[posX][posY].equals("○─")) {
+			if (!field[posX][posY].equals("●") && !field[posX][posY].equals("●─") && !field[posX][posY].equals("○")
+					&& !field[posX][posY].equals("○─")) {
 				field[posX][posY] = stone[temp];
 				return true;
 			}
@@ -244,29 +244,42 @@ public class GameHandler {
 		return false;
 	}
 
-	
-	
-	public void gameLogic() {
-		
-	}
-	
-	
-	
-	
-	
 	private void drawCurrentScore() {
-
 		drawToBuffer(FIELD_WIDTH + 5, 1, "┌────CURRENT────┐");
 		drawToBuffer(FIELD_WIDTH + 5, 2, "│   " + "●: " + currentScore[0] + " ○: " + currentScore[1] + "   │");
 		drawToBuffer(FIELD_WIDTH + 5, 3, "└───────────────┘");
-
 	}
 
 	private void drawPreviousScore() {
-
 		drawToBuffer(FIELD_WIDTH + 5, 5, "┌────PREVIOUS───┐");
 		drawToBuffer(FIELD_WIDTH + 5, 6, "│   " + "●: " + previousScore[0] + " ○: " + previousScore[1] + "   │");
 		drawToBuffer(FIELD_WIDTH + 5, 7, "└───────────────┘");
+	}
+
+	public void drawGameOver() {
+		currentScore[win] += 1; // 해당 턴의 돌의 점수를 +1 한다.
+		if (win == 0)
+			stone[win] = "●";
+		else
+			stone[win] = "○";
+		drawToBuffer(FIELD_WIDTH + 5, 9, "╔════════════════╗");
+		drawToBuffer(FIELD_WIDTH + 5, 10, "║     " + stone[win] + " WIN!     ║");
+		drawToBuffer(FIELD_WIDTH + 5, 11, "║                ║");
+		drawToBuffer(FIELD_WIDTH + 5, 12, "║  AGAIN? (Y/N)  ║");
+		drawToBuffer(FIELD_WIDTH + 5, 13, "╚════════════════╝");
+
+		render();
+		BufferedWriter out;
+
+		try { // 점수 저장
+			out = new BufferedWriter(new FileWriter("previousScore.txt"));
+			out.write(String.valueOf(currentScore[0])); // 현재 검은돌, 흰돌 점수 저장
+			out.newLine();
+			out.write(String.valueOf(currentScore[1]));
+			out.close();
+		} catch (IOException e) { // 파일 오류의 경우
+			e.printStackTrace();
+		}
 	}
 
 	private void render() { // buffer에 있는 내용을 textArea에 setText()해야한다.
@@ -282,38 +295,78 @@ public class GameHandler {
 	}
 
 	boolean isGameOver() {//승리조건에 만족했는지 판단
-       
-		if(temp==0)
-			stone[temp] = "●";
-		else
-			stone[temp] = "○";
+       //승리조건 체크 자체를 기호하나하나로 판단하고 
+		//검은 돌이 이겼는지, 흰돌이 이겼는지 판단할 수 있는 변수를 하나더 만들어서
+		//승리메시지 출력할 때 사용할 수 있도록 한다. 
 		
 		
-        for (int i = 0; i < FIELD_WIDTH; i++)
-        {
-            for (int j = 0; j < FIELD_HEIGHT; j++)
-            {   // 가로(→) 방향 체크,
-                if ((field[i][j] == stone[temp]||field[i][j] == stone[temp] +"─") && field[i][j + 1] == stone[temp] &&
-                		field[i][j + 2] == stone[temp] && field[i][j + 3] == stone[temp] &&
-                				(field[i][j + 4] == stone[temp]||field[i][j + 4] == stone[temp]+"─"))
+		for (int i = 0; i < FIELD_WIDTH; i++){ // 가로(→) 방향 체크
+            for (int j = 0; j < FIELD_HEIGHT-4; j++) {   
+                if ((field[i][j] == "●"||field[i][j] == "●─") && field[i][j + 1] == "●─" &&
+                		field[i][j + 2] == "●─" && field[i][j + 3] == "●─" &&
+                				(field[i][j + 4] == "●"||field[i][j + 4] == "●─")) {
+                	win = 0;
                 	return true;
-                    // 세로(↓) 방향 체크,
-                else if (field[i][j] == stone[temp] && field[i + 1][j] == stone[temp] &&
-                		field[i + 2][j] == stone[temp] && field[i + 3][j] == stone[temp] &&
-                				field[i + 4][j] == stone[temp]) return true;
-                    // 대각선(↘) 방향 체크,
-                else if (field[i][j] == stone[temp] && field[i + 1][j + 1] == stone[temp] &&
-                		field[i + 2][j + 2] == stone[temp] && field[i + 3][j + 3] == stone[temp] &&
-                        		field[i + 4][j + 4] == stone[temp]) return true;
-                    // 대각선(↙) 방향 체크,
-                else if (field[i][j] == stone[temp] && field[i + 1][j - 1] == stone[temp] &&
-                		field[i + 2][j - 2] == stone[temp] && field[i + 3][j - 3] == stone[temp] &&
-                				field[i + 4][j - 4] == stone[temp]) return true;
+                }
+                if ((field[i][j] == "○"||field[i][j] == "○─") && field[i][j + 1] == "○─" &&
+                		field[i][j + 2] == "○─" && field[i][j + 3] == "○─" &&
+                				(field[i][j + 4] == "○"||field[i][j + 4] == "○─")) {
+                	win = 1;
+                	return true;
+                }
             }
         }
-        return false;
-	
-		//return isGameOver;
+		
+		for (int i = 0; i < FIELD_WIDTH-4; i++) {// 세로(↓) 방향 체크,
+            for (int j = 0; j < FIELD_HEIGHT; j++) {
+                if ((field[i][j] == "●" || field[i][j] == "●─") && field[i + 1][j] == "●─" &&
+                		field[i + 2][j] == "●─" && field[i + 3][j] == "●─" &&
+                				(field[i + 4][j] == "●"||field[i + 4][j] == "●─")) {
+                	win = 0;
+                	return true;
+                }
+                if ((field[i][j] == "○" || field[i][j] == "○─") && field[i + 1][j] == "○─" &&
+                		field[i + 2][j] == "○─" && field[i + 3][j] == "○─" &&
+                				(field[i + 4][j] == "○"||field[i + 4][j] == "○─")) {
+                	win = 1;
+                	return true;
+                }
+            }		
+		}
+		
+		for (int i = 0; i < FIELD_WIDTH-4; i++) {// 대각선(↘) 방향 체크,
+            for (int j = 0; j < FIELD_HEIGHT-4; j++) {
+                if ((field[i][j] == "●"||field[i][j] == "●─") && field[i + 1][j + 1] == "●─" &&
+                		field[i + 2][j + 2] == "●─" && field[i + 3][j + 3] == "●─" &&
+                        		(field[i + 4][j + 4] == "●"||field[i + 4][j + 4] == "●─")) {
+					win = 0;
+					return true;
+				}
+                if ((field[i][j] == "○"||field[i][j] == "○─") && field[i + 1][j + 1] == "○─" &&
+                		field[i + 2][j + 2] == "○─" && field[i + 3][j + 3] == "○─" &&
+                        		(field[i + 4][j + 4] == "○"||field[i + 4][j + 4] == "○─")) {
+					win = 1;
+					return true;
+				}
+            }
+		}
+		
+        for (int i = 0; i < FIELD_WIDTH-4; i++) {// 대각선(↙) 방향 체크,
+            for (int j = 4; j < FIELD_HEIGHT; j++) { 
+            	if ((field[i][j] == "●"||field[i][j] == "●─") && field[i + 1][j - 1] == "●─" &&
+                		field[i + 2][j - 2] == "●─" && field[i + 3][j - 3] == "●─" &&
+                				(field[i + 4][j - 4] == "●"||field[i + 4][j - 4] == "●─")) {
+                	win = 0;
+					return true;
+                }
+                if ((field[i][j] == "○"||field[i][j] == "○─") && field[i + 1][j - 1] == "○─" &&
+                		field[i + 2][j - 2] == "○─" && field[i + 3][j - 3] == "○─" &&
+                				(field[i + 4][j - 4] == "○"||field[i + 4][j - 4] == "○─")) {
+                	win = 1;
+					return true;
+                }
+            }
+        }
+        return false; 
 	}
-
 }
