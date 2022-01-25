@@ -227,7 +227,7 @@ public class GameHandler {
 
 	private boolean range(int x, int y) { // 돌이 움직일 수 있는 범위 제한
 
-		if (x < FIELD_WIDTH + 10 && x >= 0 && y < FIELD_HEIGHT && y >= 0) {
+		if (x < FIELD_WIDTH  && x >= 0 && y < FIELD_HEIGHT && y >= 0) {
 			return true;
 		}
 		return false;
