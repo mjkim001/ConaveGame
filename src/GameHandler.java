@@ -319,18 +319,20 @@ public class GameHandler {
 		
 		for (int i = 0; i < FIELD_WIDTH-4; i++) {// 세로(↓) 방향 체크,
             for (int j = 0; j < FIELD_HEIGHT; j++) {
-                if ((field[i][j] == "●" || field[i][j] == "●─") && field[i + 1][j] == "●─" &&
-                		field[i + 2][j] == "●─" && field[i + 3][j] == "●─" &&
-                				(field[i + 4][j] == "●"||field[i + 4][j] == "●─")) {
-                	win = 0;
+            	if((field[i][j] == "●" && field[i + 1][j] == "●" && field[i + 2][j] == "●"&&
+            			field[i + 3][j] == "●" && field[i + 4][j] == "●")||
+            			(field[i][j] == "●─" && field[i + 1][j] == "●─" && 
+            			field[i + 2][j] == "●─" && field[i + 3][j] == "●─" && field[i + 4][j] == "●─")) {
+            		win = 0;
                 	return true;
-                }
-                if ((field[i][j] == "○" || field[i][j] == "○─") && field[i + 1][j] == "○─" &&
-                		field[i + 2][j] == "○─" && field[i + 3][j] == "○─" &&
-                				(field[i + 4][j] == "○"||field[i + 4][j] == "○─")) {
-                	win = 1;
+            	}
+            	if((field[i][j] == "○" && field[i + 1][j] == "○" && field[i + 2][j] == "○"&&
+            			field[i + 3][j] == "○" && field[i + 4][j] == "○")||
+            			(field[i][j] == "○─" && field[i + 1][j] == "○─" && 
+            			field[i + 2][j] == "○─" && field[i + 3][j] == "○─" && field[i + 4][j] == "○─")) {
+            		win = 1;
                 	return true;
-                }
+            	}
             }		
 		}
 		
