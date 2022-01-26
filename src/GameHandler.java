@@ -48,7 +48,7 @@ public class GameHandler {
 
 	public void initData() {
 		// 돌 놓는 판 구역에 기호 할당
-
+		initPlayer();
 		for (int x = 0; x < FIELD_WIDTH; x++) {
 			for (int y = 0; y < FIELD_HEIGHT; y++) {
 				field[x][y] = "┼─";
