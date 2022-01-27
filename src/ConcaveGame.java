@@ -36,17 +36,10 @@ public class ConcaveGame extends JFrame implements KeyListener {
         public void run() {
             // game loop
             while (!handler.isGameOver()) {
-                // 1. Game timing ================================
                 handler.gameTiming();
-                // 2. Game logic ==================================
-                handler.initPlayer();
-                //handler.gameLogic();
-                // 3. Render output ==============================
                 handler.drawAll();
             }
-            //game over
-
-            //handler.drawGameOver();
+            handler.drawGameOver();
         }
     }
 
